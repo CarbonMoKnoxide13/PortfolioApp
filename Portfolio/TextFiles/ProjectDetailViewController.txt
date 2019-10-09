@@ -1,0 +1,161 @@
+//
+//  ProjectDetailViewController.swift
+//  Portfolio
+//
+//  Created by Aramis Knox on 9/30/19.
+//  Copyright © 2019 Aramis Knox. All rights reserved.
+//
+
+import Foundation
+import UIKit
+
+class ProjectDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    var codeTableView : UITableView!
+    var screenshotImageView : UIImageView!
+    var nextButton : UIButton!
+    var backButton : UIButton!
+    var project : Project!
+    var screen : Screen!
+    var currentScreen = 0
+    
+    func initializeProperties() {
+        codeTableView = {
+            let tv = UITableView()
+            tv.translatesAutoresizingMaskIntoConstraints = false
+            tv.register(CodeTableViewCell.self, forCellReuseIdentifier: "codeCell")
+            tv.backgroundColor = UIColor(rgb: 0x0c0b0f)
+            return tv
+        }()
+        
+        screenshotImageView = {
+            let iv = UIImageView()
+            iv.image = UIImage(named: screen.screenshotPath)
+            iv.contentMode = .scaleToFill
+            iv.translatesAutoresizingMaskIntoConstraints = false
+            iv.backgroundColor = .green
+            return iv
+        }()
+        
+        nextButton = {
+            let button = UIButton()
+            button.setTitle("Next", for: .normal)
+            button.setTitleColor(.white, for: .normal)
+            button.titleLabel!.font = UIFont(name: "Avenir-Heavy", size: 17)
+            button.addTarget(self, action: #selector(nextSlide(_:)), for: .touchUpInside)
+            button.titleLabel!.textAlignment = .right
+            button.translatesAutoresizingMaskIntoConstraints = false
+            return button
+        }()
+        
+        backButton = {
+            let button = UIButton()
+            button.setTitle("Back", for: .normal)
+            button.setTitleColor(.white, for: .normal)
+            button.titleLabel!.font = UIFont(name: "Avenir-Heavy", size: 17)
+            button.addTarget(self, action: #selector(previousSlide(_:)), for: .touchUpInside)
+            button.translatesAutoresizingMaskIntoConstraints = false
+            return button
+        }()
+    }
+    
+    @objc func nextSlide(_ sender: UIButton) {
+        //Set the next slide as the data source
+        if (currentScreen < project.screens.count - 1) {
+            currentScreen += 1
+            screen = project.screens[currentScreen]
+            screenshotImageView.image = UIImage(named: screen.screenshotPath)
+            codeTableView.reloadData()
+        }
+        //print("Next Slide!")
+    }
+    
+    @objc func previousSlide(_ sender: UIButton) {
+        //Set the previous slide as the data source
+        if (currentScreen > 0) {
+            currentScreen -= 1
+            screen = project.screens[currentScreen]
+            screenshotImageView.image = UIImage(named: screen.screenshotPath)
+            codeTableView.reloadData()
+        }
+        //print("Previous Slide!")
+    }
+    
+    func readSourceCodeFromFile(filepath: String) -> String {
+
+        do {
+            let fileURL = Bundle.main.path(forResource: filepath, ofType: "txt")!
+            
+            let data = try String(contentsOfFile: fileURL, encoding: String.Encoding(rawValue: String.Encoding.ascii.rawValue))
+            
+            return data as String
+        } catch {
+            print("Failed!")
+        }
+        
+        return "Error"
+    }
+    
+    func setupConstraints() {
+        view.addSubview(codeTableView)
+        view.addSubview(screenshotImageView)
+        view.addSubview(nextButton)
+        view.addSubview(backButton)
+        
+        //top
+        view.addConstraint(NSLayoutConstraint(item: screenshotImageView!, attribute: .top, relatedBy: .equal, toItem: self.topLayoutGuide, attribute: .bottom, multiplier: 1, constant: 16))
+        view.addConstraint(NSLayoutConstraint(item: codeTableView!, attribute: .top, relatedBy: .equal, toItem: screenshotImageView, attribute: .bottom, multiplier: 1, constant: 0))
+        
+        //centerY
+        view.addConstraint(NSLayoutConstraint(item: nextButton!, attribute: .centerY, relatedBy: .equal, toItem: screenshotImageView, attribute: .centerY, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: backButton!, attribute: .centerY, relatedBy: .equal, toItem: screenshotImageView, attribute: .centerY, multiplier: 1, constant: 0))
+        
+        //left
+        view.addConstraint(NSLayoutConstraint(item: codeTableView!, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: backButton!, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 24))
+        
+        //right
+        view.addConstraint(NSLayoutConstraint(item: nextButton!, attribute: .right, relatedBy: .equal, toItem: view, attribute: .right, multiplier: 1, constant: -24))
+        
+        //centerX
+        view.addConstraint(NSLayoutConstraint(item: screenshotImageView!, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0))
+        
+        //bottom
+        view.addConstraint(NSLayoutConstraint(item: screenshotImageView!, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: codeTableView!, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottom, multiplier: 1, constant: 0))
+        
+        //height
+        view.addConstraint(NSLayoutConstraint(item: nextButton!, attribute: .height, relatedBy: .equal, toItem: nextButton, attribute: .height, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: backButton!, attribute: .height, relatedBy: .equal, toItem: backButton, attribute: .height, multiplier: 1, constant: 0))
+        
+        
+        
+        //width
+        view.addConstraint(NSLayoutConstraint(item: nextButton!, attribute: .width, relatedBy: .equal, toItem: nextButton, attribute: .width, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: backButton!, attribute: .width, relatedBy: .equal, toItem: backButton, attribute: .width, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: codeTableView!, attribute: .width, relatedBy: .equal, toItem: codeTableView, attribute: .width, multiplier: 0, constant: UIScreen.main.bounds.width))
+        view.addConstraint(NSLayoutConstraint(item: screenshotImageView!, attribute: .width, relatedBy: .equal, toItem: codeTableView, attribute: .width, multiplier: 0.5, constant: 0))
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor(rgb: 0x0c0b0f)
+        navigationController!.title = project.title
+        initializeProperties()
+        codeTableView.delegate = self
+        codeTableView.dataSource = self
+        codeTableView.separatorStyle = .none
+        setupConstraints()
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return screen.textFiles.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = codeTableView.dequeueReusableCell(withIdentifier: "codeCell") as! CodeTableViewCell
+        cell.codeLabel.text = readSourceCodeFromFile(filepath: screen.textFiles[indexPath.row])
+        return cell
+    }
+    
+}

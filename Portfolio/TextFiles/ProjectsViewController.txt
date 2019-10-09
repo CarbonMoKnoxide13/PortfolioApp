@@ -1,0 +1,113 @@
+//
+//  ProjectsViewController.swift
+//  Portfolio
+//
+//  Created by Aramis Knox on 9/10/19.
+//  Copyright © 2019 Aramis Knox. All rights reserved.
+//
+
+import Foundation
+import UIKit
+
+class ProjectsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    var gradientLayer: CAGradientLayer!
+    var tableView: UITableView!
+    var projects: [Project]!
+    var faceImageView: UIImageView!
+    
+    fileprivate func createProjectHierarchy() {
+        let portfolioProject = Project()
+        portfolioProject.title = "Portfolio"
+        let portfolioScreen = Screen()
+        portfolioScreen.screenshotPath = "path"
+        let portfolioCodePath = "Helpers"
+        portfolioScreen.textFiles = [portfolioCodePath]
+        portfolioProject.screens = [portfolioScreen]
+        
+        projects = [portfolioProject]
+    }
+    
+    func initializeProperties() {
+        tableView = {
+            let tv = UITableView()
+            tv.translatesAutoresizingMaskIntoConstraints = false
+            tv.register(ProjectCell.self, forCellReuseIdentifier: "projectCell")
+            return tv
+        }()
+        
+        faceImageView = {
+            let iv = UIImageView()
+            iv.image = UIImage(named: "AramisDrawingThoughBubble.png")
+            iv.contentMode = .scaleToFill
+            iv.translatesAutoresizingMaskIntoConstraints = false
+            return iv
+        }()
+        
+        createProjectHierarchy()
+        //projects = ["IGN Project", "Gameboy Project", "Workout Project", "Compiler Project", "MyCollegeTown"]
+    }
+    
+    func addConstraints() {
+        view.addSubview(faceImageView)
+        view.addConstraint(NSLayoutConstraint(item: faceImageView!, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottom, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: faceImageView!, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: faceImageView!, attribute: .width, relatedBy: .equal, toItem: faceImageView, attribute: .width, multiplier: 0, constant: UIScreen.main.bounds.width))
+        view.addConstraint(NSLayoutConstraint(item: faceImageView!, attribute: .height, relatedBy: .equal, toItem: faceImageView, attribute: .width, multiplier: 1 / 1.4, constant: 0))
+    }
+    
+    func createGradientLayer() {
+        
+        gradientLayer = CAGradientLayer()
+        gradientLayer.frame = self.view.bounds
+     
+        gradientLayer.colors = [UIColor.red.cgColor, UIColor.yellow.cgColor]
+     
+        self.view.layer.addSublayer(gradientLayer)
+    }
+    
+    fileprivate func setupTableView() {
+        view.addSubview(tableView)
+        tableView.separatorStyle = .none
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.backgroundColor = .clear
+        //tableView.backgroundColor = UIColor(rgb: 0x0c0b0f)
+        view.addConstraint(NSLayoutConstraint(item: tableView!, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: tableView!, attribute: .right, relatedBy: .equal, toItem: view, attribute: .right, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: tableView!, attribute: .top, relatedBy: .equal, toItem: view, attribute: .top, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: tableView!, attribute: .bottom, relatedBy: .equal, toItem: faceImageView, attribute: .top, multiplier: 1, constant: 0))
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        createGradientLayer()
+        initializeProperties()
+        addConstraints()
+        setupTableView()
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return projects.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "projectCell") as! ProjectCell
+        cell.projectNameLabel.text = projects[indexPath.row].title
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 100
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let newVC = ProjectDetailViewController()
+        newVC.screen = projects[indexPath.row].screens[0]
+        navigationController?.pushViewController(newVC, animated: true)
+    }
+}
